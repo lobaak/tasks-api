@@ -1,3 +1,9 @@
+## Decription
+
+- [NestJS](https://nestjs.com/)
+- [SQLite](https://nestjs.com/)
+- Auth using JWT
+
 ## Installation
 
 ```bash
