@@ -24,13 +24,8 @@ export class UsersController {
     return this.usersService.register(data);
   }
 
-  @Post('email')
-  async findOne(@Body() data: UsersEntity) {
-    console.log(data);
-    return this.usersService.findOne(data.email);
-  }
-
   @Get('profile')
+  @UseGuards(AuthGuard('jwt'))
   getProfile(@Request() req) {
     console.log(req.user);
     return req.user;

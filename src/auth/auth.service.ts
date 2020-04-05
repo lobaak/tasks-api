@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
+import { AuthCredentialsDto } from './dto/auth-credentials.dto';
+import { JwtPayload } from './auth.types';
 
 @Injectable()
 export class AuthService {
@@ -13,19 +14,27 @@ export class AuthService {
   async validateUser(email: string, pass: string) {
     const user = await this.usersService.findOne(email);
 
-    if (user && (await bcrypt.compare(pass, user.password))) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password, ...rest } = user;
-      return rest;
+    if (user && (await user.comparePassword(pass))) {
+      return user.toResponseObject();
     }
 
     return null;
   }
 
-  async login(user: any) {
-    const payload = { email: user.email, sub: user.userId };
-    return {
-      accessToken: this.jwtService.sign(payload),
-    };
+  async login(
+    authCredentialsDto: AuthCredentialsDto,
+  ): Promise<{ accessToken: string }> {
+    const user = await this.validateUser(
+      authCredentialsDto.email,
+      authCredentialsDto.password,
+    );
+
+    if (!user) {
+      throw new HttpException('Invalid login', HttpStatus.BAD_REQUEST);
+    }
+
+    const payload: JwtPayload = { email: user.email, id: user.id };
+    const accessToken = this.jwtService.sign(payload);
+    return { accessToken };
   }
 }

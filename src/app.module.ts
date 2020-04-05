@@ -8,12 +8,11 @@ import { AppService } from './app.service';
 import { TasksModule } from './tasks/tasks.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
-import configuration from './config/configuration';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot(),
-    ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
+    ConfigModule.forRoot({ isGlobal: true }),
     TasksModule,
     UsersModule,
     AuthModule,
