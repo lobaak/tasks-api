@@ -1,7 +1,7 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
-import { AuthCredentialsDto } from './dto/auth-credentials.dto';
+import { LoginUserDto } from '../users/user.dto';
 import { JwtPayload } from './auth.types';
 
 @Injectable()
@@ -15,18 +15,16 @@ export class AuthService {
     const user = await this.usersService.findOne(email);
 
     if (user && (await user.comparePassword(pass))) {
-      return user.toResponseObject();
+      return user;
     }
 
     return null;
   }
 
-  async login(
-    authCredentialsDto: AuthCredentialsDto,
-  ): Promise<{ accessToken: string }> {
+  async login(loginUserDto: LoginUserDto): Promise<{ accessToken: string }> {
     const user = await this.validateUser(
-      authCredentialsDto.email,
-      authCredentialsDto.password,
+      loginUserDto.email,
+      loginUserDto.password,
     );
 
     if (!user) {

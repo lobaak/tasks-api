@@ -1,7 +1,6 @@
 import { PrimaryGeneratedColumn, Column, Entity, BeforeInsert } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import * as jwt from 'jsonwebtoken';
-import { UserResponseObject } from './user.types';
+import { Exclude, classToPlain } from 'class-transformer';
 
 @Entity()
 export class UsersEntity {
@@ -12,10 +11,13 @@ export class UsersEntity {
   @Column({ unique: true })
   email: string;
 
+  @Exclude()
   @Column()
   salt: string;
 
-  @Column() password: string;
+  @Exclude()
+  @Column()
+  password: string;
   @BeforeInsert()
   async hashPassword() {
     const salt = await bcrypt.genSalt();
@@ -31,9 +33,7 @@ export class UsersEntity {
     return hash === this.password;
   }
 
-  toResponseObject(): UserResponseObject {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, salt, ...fields } = this;
-    return fields;
+  toJSON() {
+    return classToPlain(this);
   }
 }

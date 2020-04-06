@@ -1,8 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UsersEntity } from './users.entity';
-import { UserResponseObject } from './user.types';
+import { RegisterUserDto } from './user.dto';
 
 @Injectable()
 export class UsersService {
@@ -11,14 +15,20 @@ export class UsersService {
     private userRepository: Repository<UsersEntity>,
   ) {}
 
-  async findAll(): Promise<UserResponseObject[]> {
-    const users = await this.userRepository.find();
-    return users.map(user => user.toResponseObject());
+  async findAll(): Promise<UsersEntity[]> {
+    return await this.userRepository.find();
   }
 
-  async register(data: UsersEntity): Promise<UsersEntity> {
-    const user = await this.userRepository.create(data);
-    return await this.userRepository.save(user);
+  async register(data: RegisterUserDto): Promise<UsersEntity> {
+    try {
+      const user = await this.userRepository.create(data);
+      return await this.userRepository.save(user);
+    } catch (err) {
+      if (err.code === 'SQLITE_CONSTRAINT') {
+        throw new ConflictException('Email already exists');
+      }
+      throw new InternalServerErrorException();
+    }
   }
 
   async findOne(email: string): Promise<UsersEntity> {

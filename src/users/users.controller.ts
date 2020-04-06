@@ -5,10 +5,11 @@ import {
   Body,
   Request,
   UseGuards,
+  ValidationPipe,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { UsersEntity } from './users.entity';
 import { AuthGuard } from '@nestjs/passport';
+import { RegisterUserDto } from './user.dto';
 
 @Controller('users')
 export class UsersController {
@@ -20,14 +21,13 @@ export class UsersController {
   }
 
   @Post()
-  async register(@Body() data: UsersEntity) {
+  async register(@Body(ValidationPipe) data: RegisterUserDto) {
     return this.usersService.register(data);
   }
 
   @Get('profile')
   @UseGuards(AuthGuard('jwt'))
   getProfile(@Request() req) {
-    console.log(req.user);
     return req.user;
   }
 }
