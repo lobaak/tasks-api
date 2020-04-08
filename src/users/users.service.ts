@@ -31,6 +31,13 @@ export class UsersService {
     }
   }
 
+  async profile(data: { id: string }) {
+    return await this.userRepository.findOne(
+      { id: data.id },
+      { relations: ['tasks'] },
+    );
+  }
+
   async findOne(email: string): Promise<UsersEntity> {
     return await this.userRepository.findOne({ email });
   }

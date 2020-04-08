@@ -3,7 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Request,
   UseGuards,
   ValidationPipe,
 } from '@nestjs/common';
@@ -27,7 +26,7 @@ export class UsersController {
 
   @Get('profile')
   @UseGuards(AuthGuard('jwt'))
-  getProfile(@Request() req) {
-    return req.user;
+  getProfile(@Body() data: { id: string }) {
+    return this.usersService.profile(data);
   }
 }
