@@ -1,15 +1,22 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
+import { UsersEntity } from 'src/users/users.entity';
 
 @Entity()
 export class TasksEntity {
-  @PrimaryGeneratedColumn() id: number;
+  @PrimaryGeneratedColumn('uuid') id: string;
 
   @Column() name: string;
 
-  @Column() score: number;
+  @Column({ default: 0 }) score: number;
 
   @Column({ type: 'datetime', default: () => "datetime('now','localtime')" })
-  createDate: string;
+  createdDate: string;
 
   @Column({ default: false })
   completed: boolean;
@@ -19,4 +26,13 @@ export class TasksEntity {
 
   @Column({ nullable: true })
   dueDate: string;
+
+  @Column({ nullable: true })
+  userId: string;
+  @ManyToOne(
+    () => UsersEntity,
+    user => user.tasks,
+  )
+  @JoinColumn({ name: 'userId' })
+  user: UsersEntity;
 }

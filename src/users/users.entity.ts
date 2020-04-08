@@ -1,6 +1,13 @@
-import { PrimaryGeneratedColumn, Column, Entity, BeforeInsert } from 'typeorm';
+import {
+  PrimaryGeneratedColumn,
+  Column,
+  Entity,
+  BeforeInsert,
+  OneToMany,
+} from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Exclude, classToPlain } from 'class-transformer';
+import { TasksEntity } from '../tasks/tasks.entity';
 
 @Entity()
 export class UsersEntity {
@@ -36,4 +43,10 @@ export class UsersEntity {
   toJSON() {
     return classToPlain(this);
   }
+
+  @OneToMany(
+    () => TasksEntity,
+    task => task.user,
+  )
+  tasks: TasksEntity[];
 }
