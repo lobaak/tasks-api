@@ -22,6 +22,9 @@ export class UsersEntity {
   @Column()
   salt: string;
 
+  @Column({ default: 0 })
+  tokenVersion: number;
+
   @Exclude()
   @Column()
   password: string;
