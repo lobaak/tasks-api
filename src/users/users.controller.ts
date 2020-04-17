@@ -5,6 +5,7 @@ import {
   Body,
   UseGuards,
   ValidationPipe,
+  Param,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { AuthGuard } from '@nestjs/passport';
@@ -24,9 +25,9 @@ export class UsersController {
     return this.usersService.register(data);
   }
 
-  @Get('profile')
+  @Get('profile/:id')
   @UseGuards(AuthGuard('jwt'))
-  getProfile(@Body() data: { id: string }) {
-    return this.usersService.profile(data);
+  getProfile(@Param() params: { id: string }) {
+    return this.usersService.profile(params.id);
   }
 }

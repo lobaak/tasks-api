@@ -3,3 +3,7 @@ export interface JwtPayload {
   id: string;
   tokenVersion?: number;
 }
+
+export interface AccessToken {
+  accessToken: string;
+}

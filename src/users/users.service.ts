@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  ConflictException,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { Injectable, HttpStatus, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UsersEntity } from './users.entity';
@@ -25,17 +21,18 @@ export class UsersService {
       return await this.userRepository.save(user);
     } catch (err) {
       if (err.code === 'SQLITE_CONSTRAINT') {
-        throw new ConflictException('Email already exists');
+        throw new HttpException('Email already exists', HttpStatus.CONFLICT);
       }
-      throw new InternalServerErrorException();
+      throw new HttpException('Error', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
-  async profile(data: { id: string }) {
-    return await this.userRepository.findOne(
-      { id: data.id },
-      { relations: ['tasks'] },
-    );
+  async profile(id: string) {
+    if (!id) {
+      throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    }
+
+    return await this.userRepository.findOne({ id }, { relations: ['tasks'] });
   }
 
   async findOne(email: string): Promise<UsersEntity> {

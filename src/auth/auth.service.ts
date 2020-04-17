@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto } from '../users/user.dto';
@@ -14,12 +9,6 @@ import {
   ACCESS_TOKEN_EXPIRES,
 } from './auth.accessTokenExpiry';
 
-type AccessTokenType = string;
-
-interface AccessToken {
-  accessToken: AccessTokenType;
-}
-
 @Injectable()
 export class AuthService {
   constructor(
@@ -27,14 +16,14 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  createAccessToken(user: JwtPayload): AccessTokenType {
+  createAccessToken(user: JwtPayload): string {
     return this.jwtService.sign(
       { email: user.email, id: user.id },
       { expiresIn: ACCESS_TOKEN_EXPIRES },
     );
   }
 
-  createRefreshToken(user: JwtPayload): AccessTokenType {
+  createRefreshToken(user: JwtPayload): string {
     return this.jwtService.sign(
       { email: user.email, id: user.id, tokenVersion: user.tokenVersion },
       { expiresIn: REFRESH_TOKEN_EXPIRES },
@@ -44,7 +33,6 @@ export class AuthService {
   createCookie(res, token) {
     res.cookie('rid', token, {
       httpOnly: true,
-      path: '/refresh-token',
     });
   }
 
@@ -58,7 +46,10 @@ export class AuthService {
     return null;
   }
 
-  async login({ body }: { body: LoginUserDto }, res: Response): Promise<any> {
+  async login(
+    { body }: { body: LoginUserDto },
+    res: Response,
+  ): Promise<Response> {
     const user = await this.validateUser(body.email, body.password);
 
     if (!user) {
@@ -68,10 +59,10 @@ export class AuthService {
     const refreshToken = this.createRefreshToken(user);
     this.createCookie(res, refreshToken);
 
-    return res.send({ accessToken: this.createAccessToken(user) });
+    return res.send({ accessToken: this.createAccessToken(user), user });
   }
 
-  async refreshToken(req: Request, res: Response): Promise<any> {
+  async refreshToken(req: Request, res: Response): Promise<Response> {
     const { rid } = req.cookies;
 
     if (!rid) {
@@ -79,7 +70,7 @@ export class AuthService {
     }
 
     try {
-      const { email }: JwtPayload = this.jwtService.verify(rid);
+      const { email, tokenVersion }: JwtPayload = this.jwtService.verify(rid);
 
       const user = await this.usersService.findOne(email);
 
@@ -87,10 +78,14 @@ export class AuthService {
         throw new HttpException('User not found', HttpStatus.UNAUTHORIZED);
       }
 
-      const refreshToken = this.createRefreshToken(user);
-      this.createCookie(res, refreshToken);
+      if (tokenVersion !== user.tokenVersion) {
+        return res.send({ accessToken: '' });
+      }
 
-      return res.send({ accessToken: this.createAccessToken(user) });
+      // const refreshToken = this.createRefreshToken(user);
+      // this.createCookie(res, refreshToken);
+
+      return res.send({ accessToken: this.createAccessToken(user), user });
     } catch (err) {
       console.log(err.message || err.name);
       return res.send({ accessToken: '' });
