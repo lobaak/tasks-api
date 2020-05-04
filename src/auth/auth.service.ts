@@ -79,7 +79,6 @@ export class AuthService {
 
 			return res.send({ accessToken: this.createAccessToken(user), user });
 		} catch (err) {
-			console.log(err.message || err.name);
 			return res.send(defaultResponse);
 		}
 	}
@@ -100,15 +99,10 @@ export class AuthService {
 				throw new HttpException('User not found', HttpStatus.NOT_FOUND);
 			}
 
-			const tokenIncrement = await this.userRepository.update(user.id, { tokenVersion1: user.tokenVersion + 1 });
-
-			if (!tokenIncrement) {
-				throw new HttpException('Server error', HttpStatus.INTERNAL_SERVER_ERROR);
-			}
-
-			return res.send(defaultResponse);
+			await this.userRepository.update(user.id, { tokenVersion: user.tokenVersion + 1 });
 		} catch (err) {
-			return res.send(defaultResponse);
+			throw new HttpException(err.message, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
+		return res.send(defaultResponse);
 	}
 }
