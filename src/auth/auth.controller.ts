@@ -1,14 +1,15 @@
-import { Controller, Post, Req, Res, Get } from '@nestjs/common';
+import { Controller, Post, Req, Res, Get, Body, ValidationPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Request, Response } from 'express';
+import { LoginUserDto } from '../users/user.dto';
 
 @Controller('auth')
 export class AuthController {
 	constructor(private readonly authService: AuthService) {}
 
 	@Post('login')
-	async login(@Req() req: Request, @Res() res: Response) {
-		return await this.authService.login(req, res);
+	async login(@Body(ValidationPipe) body: LoginUserDto, @Res() res: Response) {
+		return await this.authService.login(body, res);
 	}
 
 	@Get('refresh-token')

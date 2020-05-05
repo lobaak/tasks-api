@@ -44,7 +44,7 @@ export class AuthService {
 		return null;
 	}
 
-	async login({ body }: { body: LoginUserDto }, res: Response): Promise<Response> {
+	async login(body: LoginUserDto, res: Response): Promise<Response> {
 		const user = await this.validateUser(body.email, body.password);
 
 		if (!user) {
