@@ -9,7 +9,7 @@ export class TasksService {
 	constructor(@InjectRepository(TasksEntity) private taskRepository: Repository<TasksEntity>) {}
 
 	async findAll(): Promise<TasksEntity[]> {
-		return this.taskRepository.find();
+		return this.taskRepository.find({ relations: [ 'user' ] });
 	}
 
 	async findOne(id: string): Promise<TasksEntity> {
